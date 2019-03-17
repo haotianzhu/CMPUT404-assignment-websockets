@@ -126,12 +126,12 @@ function getPosition(e) {
 
 function addEntity(entity, data) {
     world[entity] = data;
-    drawNextFrame(); // (but should we?)
+    // drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
-    d = {entity:data}
-
+    var d = {}
+    d[entity] = data
     socket.send(JSON.stringify(d))
-
+    drawNextFrame()
 }
 var counter = 0;
 function addEntityWithoutName(data) {
@@ -262,7 +262,7 @@ function wsSetup() {
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/world')
+        xhr.open('GET', 'http://'+host+'/world')
         xhr.send(null) // to get current world
     };
     socket.onerror = function(msg) {
@@ -270,6 +270,7 @@ function wsSetup() {
     };
     socket.onmessage = function(msg) {  
         try {
+            console.log(msg.data)
             debug("WebSocket Recv:" + msg.data);
             //XXX: TODO What are you going to do here?
             var data = JSON.parse(msg.data);
@@ -279,6 +280,7 @@ function wsSetup() {
                 if (data.hasOwnProperty(key)) {           
                     world[key] = data[key]
                 }
+                drawNextFrame()
             }
         } catch (e) {
             alert("socket on message: " + e);
