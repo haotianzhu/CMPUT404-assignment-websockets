@@ -262,8 +262,28 @@ function wsSetup() {
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
         var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState==4) {
+                try {
+                    if (xhr.status==200) {
+                        var data = JSON.parse(xhr.responseText);
+                        for (var key in data) {
+                        // check if the property/key is defined in the object itself, not in parent
+                            if (data.hasOwnProperty(key)) {           
+                                world[key] = data[key]
+                            }
+                            drawNextFrame()
+                        }
+                    }
+                } 
+                catch(e) {
+                    alert('Error: ' + e.name);
+                }
+            }
+        };
         xhr.open('GET', 'http://'+host+'/world')
-        xhr.send(null) // to get current world
+        xhr.send();
+            
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
