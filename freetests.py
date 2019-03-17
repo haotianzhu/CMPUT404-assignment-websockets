@@ -68,8 +68,10 @@ class WorldClient(WebSocketClient):
         print("RECV %s " % m)
         w = json.loads(utf8(m.data))
         kcnt = 0
+        # print(world,w,'htz' )
         for key in w:
             if (key in world):
+                # print(world[key],w[key],self.name)
                 assert world[key] == w[key]
             world[key] = w[key]
             kcnt += 1
@@ -93,8 +95,8 @@ class WorldClient(WebSocketClient):
         
 if __name__ == '__main__':
     try:
-        os.system("kill -9 $(lsof -t -i:8000)");
-        os.system("bash run.sh &");
+        os.system("kill -9 $(lsof -t -i:8000);")
+        os.system("bash run.sh &")
         print("Sleeping 3 seconds")
         gevent.sleep(3)
         ws = WorldClient('ws://127.0.0.1:8000/subscribe', protocols=['http-only', 'chat'])
@@ -125,6 +127,6 @@ if __name__ == '__main__':
         ws.close()
         ws2.close()
         gevent.sleep(1)
-        os.system("kill -9 $(lsof -t -i:8000)");
+        os.system("kill -9 $(lsof -t -i:8000);")
         print("Sleeping 2 seconds")
         gevent.sleep(2)

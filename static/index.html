@@ -47,14 +47,17 @@ world = {};
 //XXX: TODO Make this prettier!
 function drawCircle(context,entity) {
     with(context) {
-        beginPath();                
-        lineWidth = 3;
+        beginPath();        
+        lineWidth = 10;        
+        if(entity["radius"]< 10){
+            lineWidth = 3;
+        }
         var x = entity["x"];
         var y = entity["y"];
         //moveTo(x,y);
         fillStyle = entity["colour"];
         strokeStyle = fillStyle;
-        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
+        arc(x, y, (entity["radius"])<10?entity["radius"]:100, 0, 2.0 * Math.PI, false);  
         stroke();                                
     }
 }
@@ -125,6 +128,10 @@ function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
+    d = {entity:data}
+
+    socket.send(JSON.stringify(d))
+
 }
 var counter = 0;
 function addEntityWithoutName(data) {
@@ -235,12 +242,12 @@ mouse.mousedowners.push(function(x,y,clicked,e) {
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'yellow'});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    addEntityWithoutName({'x':x,'y':y,'colour':'white',
+                          'radius':5});
 });
 
 
@@ -254,6 +261,9 @@ function wsSetup() {
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/world')
+        xhr.send(null) // to get current world
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
@@ -261,7 +271,15 @@ function wsSetup() {
     socket.onmessage = function(msg) {  
         try {
             debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            //XXX: TODO What are you going to do here?
+            var data = JSON.parse(msg.data);
+            // update world, https://stackoverflow.com/questions/34913675/how-to-iterate-keys-values-in-javascript
+            for (var key in data) {
+            // check if the property/key is defined in the object itself, not in parent
+                if (data.hasOwnProperty(key)) {           
+                    world[key] = data[key]
+                }
+            }
         } catch (e) {
             alert("socket on message: " + e);
         }
